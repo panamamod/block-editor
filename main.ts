@@ -282,7 +282,6 @@ export default class BlockEditorPlugin extends Plugin {
       blockContainer.appendChild(blockWrapper);
     });
   
-    // Убрали this.addNewBlockButton(blockContainer, editor, view);
   
     // Set focus on first block
     const firstBlock = blockContainer.querySelector('.block') as HTMLElement;
@@ -323,67 +322,68 @@ export default class BlockEditorPlugin extends Plugin {
 
   // BLOCK ELEMENTS CREATION AND HANDLING
 
-  /**
-   * Create a new block element
-   */
-  private createBlockElement(line: string, index: number, editor: Editor, view: MarkdownView, container: HTMLElement): HTMLElement {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'block-wrapper';
-    wrapper.draggable = true;
-    wrapper.dataset.index = index.toString();
+
+/**
+ * Create a new block element
+ */
+private createBlockElement(line: string, index: number, editor: Editor, view: MarkdownView, container: HTMLElement): HTMLElement {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'block-wrapper';
+  wrapper.draggable = true;
+  wrapper.dataset.index = index.toString();
+
+  // Create controls container
+  const controls = document.createElement('div');
+  controls.className = 'block-controls';
   
-    // Create controls container
-    const controls = document.createElement('div');
-    controls.className = 'block-controls';
-    
-    // Create drag handle icon
-    const handle = document.createElement('div');
-    handle.className = 'block-handle';
-    handle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>';
-    
-    controls.appendChild(handle);
+  // Create drag handle icon
+  const handle = document.createElement('div');
+  handle.className = 'block-handle';
+  handle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>';
   
-    // Кнопка "плюс" сверху (добавляет блок перед текущим)
-    const addBeforeButton = document.createElement('div');
-    addBeforeButton.className = 'block-add-button block-add-before';
-    addBeforeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
-    addBeforeButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const newWrapper = this.createBlockElement('', 0, editor, view, container);
-      wrapper.before(newWrapper);
-      const newBlock = newWrapper.querySelector('.block') as HTMLElement;
-      if (newBlock) newBlock.focus();
-      this.updateContent(container, editor);
-    });
-  
-    // Create content block
-    const block = document.createElement('div');
-    block.className = 'block';
-    block.contentEditable = 'true';
-  
-    // Кнопка "плюс" снизу (добавляет блок после текущего)
-    const addAfterButton = document.createElement('div');
-    addAfterButton.className = 'block-add-button block-add-after';
-    addAfterButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
-    addAfterButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const newWrapper = this.createBlockElement('', 0, editor, view, container);
-      wrapper.after(newWrapper);
-      const newBlock = newWrapper.querySelector('.block') as HTMLElement;
-      if (newBlock) newBlock.focus();
-      this.updateContent(container, editor);
-    });
-  
-    // Analyze block type and content
-    const { blockType, cleanText } = this.parseBlockType(line);
-    block.textContent = cleanText;
-    block.dataset.type = blockType;
-  
-    // Собираем элементы: плюсик сверху, controls, блок, плюсик снизу
-    wrapper.append(addBeforeButton, controls, block, addAfterButton);
-    this.addBlockListeners(wrapper, block, editor, view, container);
-    return wrapper;
-  }
+  controls.appendChild(handle);
+
+  // Кнопка "плюс" сверху (добавляет блок перед текущим)
+  const addBeforeButton = document.createElement('div');
+  addBeforeButton.className = 'block-add-button block-add-before';
+  addBeforeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><  <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+  addBeforeButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const newWrapper = this.createBlockElement('', 0, editor, view, container);
+    wrapper.before(newWrapper);
+    const newBlock = newWrapper.querySelector('.block') as HTMLElement;
+    if (newBlock) newBlock.focus();
+    this.updateContent(container, editor);
+  });
+
+  // Create content block
+  const block = document.createElement('div');
+  block.className = 'block';
+  block.contentEditable = 'true';
+
+  // Кнопка "плюс" снизу (добавляет блок после текущего)
+  const addAfterButton = document.createElement('div');
+  addAfterButton.className = 'block-add-button block-add-after';
+  addAfterButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+  addAfterButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const newWrapper = this.createBlockElement('', 0, editor, view, container);
+    wrapper.after(newWrapper);
+    const newBlock = newWrapper.querySelector('.block') as HTMLElement;
+    if (newBlock) newBlock.focus();
+    this.updateContent(container, editor);
+  });
+
+  // Analyze block type and content
+  const { blockType, cleanText } = this.parseBlockType(line);
+  block.textContent = cleanText;
+  block.dataset.type = blockType;
+
+  // Собираем элементы: плюсик сверху, controls, блок, плюсик снизу
+  wrapper.append(addBeforeButton, controls, block, addAfterButton);
+  this.addBlockListeners(wrapper, block, editor, view, container);
+  return wrapper;
+}
 
   private createBlockControls(): HTMLElement {
     const controls = document.createElement('div');

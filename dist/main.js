@@ -210,7 +210,6 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
             const blockWrapper = this.createBlockElement(line, index, editor, view, blockContainer);
             blockContainer.appendChild(blockWrapper);
         });
-        // Убрали this.addNewBlockButton(blockContainer, editor, view);
         // Set focus on first block
         const firstBlock = blockContainer.querySelector('.block');
         if (firstBlock)
@@ -266,7 +265,7 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
         // Кнопка "плюс" сверху (добавляет блок перед текущим)
         const addBeforeButton = document.createElement('div');
         addBeforeButton.className = 'block-add-button block-add-before';
-        addBeforeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+        addBeforeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><  <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
         addBeforeButton.addEventListener('click', (e) => {
             e.stopPropagation();
             const newWrapper = this.createBlockElement('', 0, editor, view, container);

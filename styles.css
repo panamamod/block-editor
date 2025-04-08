@@ -1,8 +1,9 @@
-/* Main container */
-.block-editor-container {
+/* ==========================================================================
+   Block Editor Base
+   ========================================================================== */
+   .block-editor-container {
     display: flex;
     flex-direction: column;
-    height: auto;
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
@@ -10,91 +11,140 @@
     box-sizing: border-box;
   }
   
-  /* Block wrapper */
+  /* ==========================================================================
+     Block Structure
+     ========================================================================== */
   .block-wrapper {
     display: flex;
-    align-items: flex-start;
-    margin-bottom: 12px;
+    align-items: center;
+    margin-bottom: 10px;
     position: relative;
     border-radius: 6px;
-    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    padding: 2px 0;
+    transition: background-color 0.2s ease;
   }
   
   .block-wrapper:hover {
     background-color: var(--background-secondary-alt);
   }
   
-  .block-wrapper.is-active {
-    background-color: var(--background-secondary-alt);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+  /* Block content */
+  .block {
+    flex: 1;
+    padding: 6px 12px;
+    min-height: 28px;
+    outline: none;
+    border-radius: 4px;
+    line-height: 1.6;
+    color: var(--text-normal);
+    caret-color: var(--text-accent);
+    transition: all 0.2s ease;
   }
   
-  /* Block controls */
+  .block:focus {
+    background-color: var(--background-primary-alt);
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.2);
+  }
+  
+  .block:empty::before {
+    content: 'Type something here...';
+    color: var(--text-faint);
+    font-style: italic;
+    pointer-events: none;
+  }
+  
+  /* ==========================================================================
+     Block Controls
+     ========================================================================== */
   .block-controls {
-    width: 32px;
-    padding: 8px 0;
-    opacity: 0;
-    transition: opacity 0.25s ease;
+    width: 24px;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-right: 8px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
   }
   
   .block-wrapper:hover .block-controls {
-    opacity: 0.7;
-  }
-  
-  .block-wrapper.is-active .block-controls {
     opacity: 1;
   }
   
-  /* Drag handle */
   .block-handle {
     cursor: grab;
-    user-select: none;
-    color: var(--text-muted);
-    padding: 4px;
+    padding: 2px;
     border-radius: 4px;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    user-select: none;
   }
   
   .block-handle:hover {
-    background-color: var(--background-modifier-hover);
     color: var(--text-normal);
   }
   
   .block-handle:active {
     cursor: grabbing;
-    background-color: var(--background-modifier-active);
   }
   
-  /* Block content */
-  .block {
-    flex-grow: 1;
-    padding: 8px 12px;
-    min-height: 28px;
-    outline: none;
-    border-radius: 4px;
-    transition: background-color 0.2s ease;
-    line-height: 1.6;
-    color: var(--text-normal);
-    caret-color: var(--text-accent);
+  /* ==========================================================================
+     Add Block Buttons
+     ========================================================================== */
+  .block-add-button {
+    width: 20px;
+    height: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    background-color: transparent;
+    transition: all 0.15s ease wombocombo;
+    z-index: 10;
   }
   
-  .block:focus {
-    background-color: var(--background-primary-alt);
+  .block-add-before {
+    top: -10px;
+    left: 12px;
   }
   
-  /* Block types styling */
+  .block-add-after {
+    bottom: -10px;
+    left: 12px;
+  }
+  
+  .block-wrapper:hover .block-add-button {
+    display: flex;
+    opacity: 0.6;
+  }
+  
+  .block-add-button:hover {
+    opacity: 1;
+    background-color: var(--background-modifier-hover);
+  }
+  
+  .block-add-button svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--text-muted);
+  }
+  
+  .block-add-button:hover svg {
+    stroke: var(--text-accent);
+  }
+  
+  /* ==========================================================================
+     Block Types
+     ========================================================================== */
   .block[data-type="h1"] {
     font-size: 1.8em;
     font-weight: 700;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+    margin: 0.5em 0 0.3em;
     color: var(--text-accent);
     letter-spacing: -0.02em;
   }
@@ -102,8 +152,7 @@
   .block[data-type="h2"] {
     font-size: 1.5em;
     font-weight: 600;
-    margin-top: 0.8em;
-    margin-bottom: 0.4em;
+    margin: 0.4em 0 0.2em;
     color: var(--text-accent);
     letter-spacing: -0.015em;
   }
@@ -111,8 +160,7 @@
   .block[data-type="h3"] {
     font-size: 1.3em;
     font-weight: 600;
-    margin-top: 0.7em;
-    margin-bottom: 0.3em;
+    margin: 0.3em 0 0.2em;
     letter-spacing: -0.01em;
   }
   
@@ -125,8 +173,8 @@
   }
   
   .block[data-type="ul"] {
-    position: relative;
     padding-left: 24px;
+    position: relative;
   }
   
   .block[data-type="ul"]::before {
@@ -136,24 +184,28 @@
     color: var(--text-accent);
   }
   
-  /* Formatting menu */
+  /* ==========================================================================
+     Block Menu
+     ========================================================================== */
   .block-menu {
     position: absolute;
+    left: 40px;
+    top: 0;
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
     border-radius: 8px;
     padding: 8px 0;
-    z-index: 1000;
-    left: 40px;
-    top: 0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.1);
     min-width: 180px;
-    opacity: 0;
-    transform: translateY(-5px) scale(0.98);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
     animation: blockMenuAppear 0.2s ease forwards;
   }
   
   @keyframes blockMenuAppear {
+    from {
+      opacity: 0;
+      transform: translateY(-5px) scale(0.98);
+    }
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
@@ -173,15 +225,14 @@
     display: flex;
     align-items: center;
     width: 100%;
-    text-align: left;
     padding: 8px 12px;
-    background: none;
     border: none;
-    cursor: pointer;
+    background: none;
     color: var(--text-normal);
     font-size: 0.95em;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    border-radius: 0;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s ease;
   }
   
   .block-menu button:hover {
@@ -189,17 +240,13 @@
     color: var(--text-accent);
   }
   
-  .block-menu button:active {
-    background: var(--background-modifier-active);
-  }
-  
   .block-menu button .icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     width: 24px;
     margin-right: 8px;
     color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .block-menu button:hover .icon {
@@ -212,7 +259,9 @@
     margin: 6px 0;
   }
   
-  /* Block mode toggle button */
+  /* ==========================================================================
+     Block Mode Toggle
+     ========================================================================== */
   .block-mode-button.is-active {
     color: var(--text-accent);
     background-color: var(--background-modifier-hover);
@@ -222,98 +271,20 @@
     background-color: var(--background-modifier-active);
   }
   
-  /* Add new block button */
-  .block-add-button {
-    opacity: 0;
-    position: absolute;
-    left: 15px;
-    transform: translateX(-50%) translateY(-50%) scale(0.9);
-    background-color: var(--background-primary);
-    border: 1.5px solid var(--background-modifier-border);
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-    z-index: 2;
-    top: -10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .block-wrapper:hover .block-add-button {
-    opacity: 0.8;
-  }
-  
-  .block-add-button:hover {
-    opacity: 1 !important;
-    transform: translateX(-50%) translateY(-50%) scale(1);
-    background-color: var(--text-accent);
-    border-color: var(--text-accent);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  }
-  
-  .block-add-button:hover svg {
-    stroke: white;
-  }
-  
-  /* New block button at the bottom */
-  .new-block-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 5px;
-    padding: 8px 0;
-    opacity: 0.6;
-    transition: opacity 0.2s ease;
-  }
-  
-  .new-block-wrapper:hover {
-    opacity: 1;
-  }
-  
-  .new-block-button {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background-color: var(--background-secondary);
-    border: 1px solid var(--background-modifier-border);
-    border-radius: 4px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: all 0.2s ease;
-  }
-  
-  .new-block-button:hover {
-    background-color: var(--background-modifier-hover);
-    color: var(--text-normal);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .new-block-button svg {
-    stroke: var(--text-muted);
-    transition: stroke 0.2s ease;
-  }
-  
-  .new-block-button:hover svg {
-    stroke: var(--text-accent);
-  }
-  
-  /* Drag indicator */
+  /* ==========================================================================
+     Drag States
+     ========================================================================== */
   .block-drag-indicator {
     position: absolute;
     height: 3px;
+    width: calc(100% - 30px);
+    margin-left: 30px;
     background-color: var(--text-accent);
-    width: 100%;
+    border-radius: 3px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
     z-index: 100;
     pointer-events: none;
     display: none;
-    border-radius: 3px;
-    margin-left: 30px;
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
     animation: dragIndicatorPulse 1.5s infinite;
   }
   
@@ -322,80 +293,28 @@
     50% { opacity: 1; }
   }
   
-  /* Dragging animation */
   .dragging {
     opacity: 0.6;
     transform: scale(0.98);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   }
   
-  /* Empty block placeholder */
-  .block:empty::before {
-    content: 'Type something here...';
-    color: var(--text-faint);
-    font-style: italic;
-    pointer-events: none;
-  }
-  
-  /* Heading icons in menu */
-  .heading-icon {
-    font-weight: 600;
-    font-size: 0.9em;
-    color: var(--text-accent);
-  }
-  
-  /* Focus styles */
-  .block:focus {
-    box-shadow: inset 0 0 0 2px rgba(var(--accent-rgb), 0.2);
-  }
-  
-  /* Smooth transition between block types */
-  .block {
-    transition: font-size 0.2s ease, font-weight 0.2s ease, color 0.2s ease, 
-                margin 0.2s ease, padding 0.2s ease, background-color 0.2s ease,
-                border-left 0.2s ease;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .block-editor-container {
-      padding: 15px 10px;
-    }
-    
-    .block {
-      padding: 6px 8px;
-    }
-    
-    .block-controls {
-      width: 24px;
-    }
-  }
-  
-  /* Light theme enhancements */
-  .theme-light .block-wrapper.is-active {
-    background-color: rgba(var(--accent-rgb), 0.08);
-  }
-  
+  /* ==========================================================================
+     Theme Variations
+     ========================================================================== */
+  .theme-light .block-wrapper:hover,
   .theme-light .block[data-type="quote"] {
     background-color: rgba(var(--accent-rgb), 0.05);
   }
   
-  /* Dark theme enhancements */
-  .theme-dark .block-wrapper.is-active {
-    background-color: rgba(var(--accent-rgb), 0.15);
-  }
-  
+  .theme-dark .block-wrapper:hover,
   .theme-dark .block[data-type="quote"] {
     background-color: rgba(var(--accent-rgb), 0.1);
   }
   
-  /* Improved focus visibility for accessibility */
-  .block:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--text-accent);
-  }
-  
-  /* Animation when a new block is created */
+  /* ==========================================================================
+     Animations
+     ========================================================================== */
   @keyframes newBlockAppear {
     from {
       opacity: 0;
@@ -410,8 +329,28 @@
   .block-wrapper:last-of-type:not(.new-block-wrapper) {
     animation: newBlockAppear 0.3s ease;
   }
-
+  
+  /* ==========================================================================
+     Responsive Design
+     ========================================================================== */
+  @media (max-width: 768px) {
+    .block-editor-container {
+      padding: 15px 10px;
+    }
+  
+    .block {
+      padding: 6px 8px;
+    }
+  
+    .block-controls {
+      width: 20px;
+      margin-right: 5px;
+    }
+  }
+  
+  /* ==========================================================================
+     Utility Classes
+     ========================================================================== */
   .block-mode-hidden {
     display: none !important;
   }
-
