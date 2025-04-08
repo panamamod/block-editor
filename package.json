@@ -1,0 +1,17 @@
+{
+  "name": "obsidian-block-editor",
+  "version": "0.0.1",
+  "description": "A block-based editor for Obsidian like Notion",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && mkdir -p \"/Users/panama/LOL/.obsidian/plugins/block-editor-plugin\" && cp dist/main.js manifest.json styles.css \"/Users/panama/LOL/.obsidian/plugins/block-editor-plugin\""
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "obsidian": "latest",
+    "typescript": "^4.7.4"
+  }
+}

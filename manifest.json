@@ -1,0 +1,9 @@
+{
+  "id": "block-editor-plugin",
+  "name": "Block Editor Plugin",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "A block-based editor for Obsidian",
+  "author": "Your Name",
+  "isDesktopOnly": false
+}
