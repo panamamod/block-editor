@@ -257,15 +257,14 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
         // Create controls container
         const controls = document.createElement('div');
         controls.className = 'block-controls';
-        // Create drag handle icon
+        // Create drag handle icon (gripper)
         const handle = document.createElement('div');
         handle.className = 'block-handle';
         handle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>';
-        controls.appendChild(handle);
         // Кнопка "плюс" сверху (добавляет блок перед текущим)
         const addBeforeButton = document.createElement('div');
         addBeforeButton.className = 'block-add-button block-add-before';
-        addBeforeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><  <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+        addBeforeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
         addBeforeButton.addEventListener('click', (e) => {
             e.stopPropagation();
             const newWrapper = this.createBlockElement('', 0, editor, view, container);
@@ -275,10 +274,6 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
                 newBlock.focus();
             this.updateContent(container, editor);
         });
-        // Create content block
-        const block = document.createElement('div');
-        block.className = 'block';
-        block.contentEditable = 'true';
         // Кнопка "плюс" снизу (добавляет блок после текущего)
         const addAfterButton = document.createElement('div');
         addAfterButton.className = 'block-add-button block-add-after';
@@ -292,12 +287,18 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
                 newBlock.focus();
             this.updateContent(container, editor);
         });
+        // Append the "plus" buttons and gripper to the controls container
+        controls.append(addBeforeButton, handle, addAfterButton);
+        // Create content block
+        const block = document.createElement('div');
+        block.className = 'block';
+        block.contentEditable = 'true';
         // Analyze block type and content
         const { blockType, cleanText } = this.parseBlockType(line);
         block.textContent = cleanText;
         block.dataset.type = blockType;
-        // Собираем элементы: плюсик сверху, controls, блок, плюсик снизу
-        wrapper.append(addBeforeButton, controls, block, addAfterButton);
+        // Assemble the wrapper: controls (with nested plus buttons and gripper) and block
+        wrapper.append(controls, block);
         this.addBlockListeners(wrapper, block, editor, view, container);
         return wrapper;
     }

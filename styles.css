@@ -16,7 +16,7 @@
      ========================================================================== */
   .block-wrapper {
     display: flex;
-    align-items: center;
+    align-items: center; /* Changed to center to vertically align block-controls and block */
     margin-bottom: 10px;
     position: relative;
     border-radius: 6px;
@@ -59,11 +59,14 @@
   .block-controls {
     width: 24px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center; /* Center the gripper and plus buttons vertically within block-controls */
+    align-items: center; /* Center items horizontally */
     margin-right: 8px;
     opacity: 0;
     transition: opacity 0.15s ease;
+    position: relative;
+    height: 100%; /* Ensure block-controls stretches to match the block-wrapper's height */
   }
   
   .block-wrapper:hover .block-controls {
@@ -71,6 +74,8 @@
   }
   
   .block-handle {
+    width: 16px;
+    height: 16px;
     cursor: grab;
     padding: 2px;
     border-radius: 4px;
@@ -94,9 +99,9 @@
      Add Block Buttons
      ========================================================================== */
   .block-add-button {
-    width: 20px;
-    height: 20px;
-    display: none;
+    width: 14px;
+    height: 14px;
+    display: flex;
     align-items: center;
     justify-content: center;
     position: absolute;
@@ -104,22 +109,21 @@
     cursor: pointer;
     opacity: 0;
     background-color: transparent;
-    transition: all 0.15s ease wombocombo;
+    transition: all 0.15s ease;
     z-index: 10;
+    left: 50%;
+    transform: translateX(-50%);
   }
   
   .block-add-before {
-    top: -10px;
-    left: 12px;
+    top: -20px; /* Keep the offset above the gripper */
   }
   
   .block-add-after {
-    bottom: -10px;
-    left: 12px;
+    bottom: -20px; /* Keep the offset below the gripper */
   }
   
   .block-wrapper:hover .block-add-button {
-    display: flex;
     opacity: 0.6;
   }
   
