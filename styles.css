@@ -16,7 +16,7 @@
      ========================================================================== */
   .block-wrapper {
     display: flex;
-    align-items: center; /* Changed to center to vertically align block-controls and block */
+    align-items: center;
     margin-bottom: 10px;
     position: relative;
     border-radius: 6px;
@@ -53,6 +53,24 @@
     pointer-events: none;
   }
   
+  .block-image {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+  }
+  
+  .block[data-type="image"] {
+    padding: 6px 12px;
+    text-align: center;
+  }
+  
+  .block.drag-over {
+    border: 2px dashed var(--text-accent);
+    background-color: rgba(var(--accent-rgb), 0.1);
+  }
+  
   /* ==========================================================================
      Block Controls
      ========================================================================== */
@@ -60,13 +78,13 @@
     width: 24px;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Center the gripper and plus buttons vertically within block-controls */
-    align-items: center; /* Center items horizontally */
+    justify-content: center;
+    align-items: center;
     margin-right: 8px;
     opacity: 0;
     transition: opacity 0.15s ease;
     position: relative;
-    height: 100%; /* Ensure block-controls stretches to match the block-wrapper's height */
+    height: 100%;
   }
   
   .block-wrapper:hover .block-controls {
@@ -116,11 +134,11 @@
   }
   
   .block-add-before {
-    top: -20px; /* Keep the offset above the gripper */
+    top: -20px;
   }
   
   .block-add-after {
-    bottom: -20px; /* Keep the offset below the gripper */
+    bottom: -20px;
   }
   
   .block-wrapper:hover .block-add-button {
@@ -173,7 +191,7 @@
     padding-left: 14px;
     font-style: italic;
     color: var(--text-muted);
-    background-color: rgba(var(--accent-rgb), 0.05);
+    background-color: rgba(100, 149, 237, 0.1); /* Bluish tint with 10% opacity */
   }
   
   .block[data-type="ul"] {
@@ -306,14 +324,20 @@
   /* ==========================================================================
      Theme Variations
      ========================================================================== */
-  .theme-light .block-wrapper:hover,
-  .theme-light .block[data-type="quote"] {
-    background-color: rgba(var(--accent-rgb), 0.05);
+  .theme-light .block-wrapper:hover {
+    background-color: rgba(var(--accent-rgb), 0.05); /* Reverted to original */
   }
   
-  .theme-dark .block-wrapper:hover,
+  .theme-light .block[data-type="quote"] {
+    background-color: rgba(100, 149, 237, 0.1); /* Bluish tint for quotes */
+  }
+  
+  .theme-dark .block-wrapper:hover {
+    background-color: rgba(var(--accent-rgb), 0.1); /* Reverted to original */
+  }
+  
   .theme-dark .block[data-type="quote"] {
-    background-color: rgba(var(--accent-rgb), 0.1);
+    background-color: rgba(100, 149, 237, 0.15); /* Slightly more opaque bluish tint for dark theme */
   }
   
   /* ==========================================================================
@@ -358,22 +382,3 @@
   .block-mode-hidden {
     display: none !important;
   }
-
-/* Add to styles.css under "Block Structure" section */
-.block-image {
-  max-width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-  margin: 0 auto;
-  display: block;
-}
-
-.block[data-type="image"] {
-  padding: 6px 12px;
-  text-align: center;
-}
-
-.block.drag-over {
-  border: 2px dashed var(--text-accent);
-  background-color: rgba(var(--accent-rgb), 0.1);
-}

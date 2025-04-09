@@ -515,9 +515,9 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
         // Create new block after current one
         const newWrapper = this.createBlockElement('', 0, editor, view, container);
         const newBlock = newWrapper.querySelector('.block');
-        // Apply the same type as the current block if it's a list
-        if (currentType === 'ul') {
-            newBlock.dataset.type = 'ul';
+        // Apply the same type as the current block if it's a list or quote
+        if (currentType === 'ul' || currentType === 'quote') {
+            newBlock.dataset.type = currentType;
         }
         wrapper.after(newWrapper);
         if (newBlock)
@@ -657,21 +657,33 @@ class BlockEditorPlugin extends obsidian_1.Plugin {
      */
     updateContent(container, editor) {
         const blocks = Array.from(container.querySelectorAll('.block-wrapper:not(.new-block-wrapper)'));
-        const newLines = blocks.map(wrapper => {
+        const newLines = [];
+        let previousType = null;
+        blocks.forEach((wrapper, index) => {
             const block = wrapper.querySelector('.block');
             if (!block)
-                return '';
+                return;
             const blockType = block.dataset.type || 'p';
+            // If the previous block was a quote and the current block is not, add a blank line
+            if (previousType === 'quote' && blockType !== 'quote') {
+                newLines.push('');
+            }
             if (blockType === 'image') {
                 const img = block.querySelector('img');
                 if (img) {
-                    return `![Image](${img.src})`;
+                    newLines.push(`![Image](${img.src})`);
                 }
-                return '';
             }
-            const prefix = BlockEditorPlugin.BLOCK_PREFIXES[blockType] || '';
-            return `${prefix}${block.textContent || ''}`;
+            else {
+                const prefix = BlockEditorPlugin.BLOCK_PREFIXES[blockType] || '';
+                newLines.push(`${prefix}${block.textContent || ''}`);
+            }
+            previousType = blockType;
         });
+        // If the last block is a quote, add a blank line to terminate it
+        if (previousType === 'quote') {
+            newLines.push('');
+        }
         editor.setValue(newLines.join('\n'));
     }
     // FORMAT MENU

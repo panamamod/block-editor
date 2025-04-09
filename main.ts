@@ -645,9 +645,9 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
     const newWrapper = this.createBlockElement('', 0, editor, view, container);
     const newBlock = newWrapper.querySelector('.block') as HTMLElement;
   
-    // Apply the same type as the current block if it's a list
-    if (currentType === 'ul') {
-      newBlock.dataset.type = 'ul';
+    // Apply the same type as the current block if it's a list or quote
+    if (currentType === 'ul' || currentType === 'quote') {
+      newBlock.dataset.type = currentType;
     }
   
     wrapper.after(newWrapper);
@@ -817,30 +817,45 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
   /**
    * Update editor content from blocks
    */
-private updateContent(container: HTMLElement, editor: Editor): void {
-  const blocks = Array.from(
-    container.querySelectorAll('.block-wrapper:not(.new-block-wrapper)')
-  ) as HTMLElement[];
-  
-  const newLines = blocks.map(wrapper => {
-    const block = wrapper.querySelector('.block') as HTMLElement;
-    if (!block) return '';
+  private updateContent(container: HTMLElement, editor: Editor): void {
+    const blocks = Array.from(
+      container.querySelectorAll('.block-wrapper:not(.new-block-wrapper)')
+    ) as HTMLElement[];
     
-    const blockType = block.dataset.type as BlockType || 'p';
-    if (blockType === 'image') {
-      const img = block.querySelector('img');
-      if (img) {
-        return `![Image](${img.src})`;
-      }
-      return '';
-    }
-
-    const prefix = BlockEditorPlugin.BLOCK_PREFIXES[blockType] || '';
-    return `${prefix}${block.textContent || ''}`;
-  });
+    const newLines: string[] = [];
+    let previousType: BlockType | null = null;
   
-  editor.setValue(newLines.join('\n'));
-}
+    blocks.forEach((wrapper, index) => {
+      const block = wrapper.querySelector('.block') as HTMLElement;
+      if (!block) return;
+  
+      const blockType = block.dataset.type as BlockType || 'p';
+  
+      // If the previous block was a quote and the current block is not, add a blank line
+      if (previousType === 'quote' && blockType !== 'quote') {
+        newLines.push('');
+      }
+  
+      if (blockType === 'image') {
+        const img = block.querySelector('img');
+        if (img) {
+          newLines.push(`![Image](${img.src})`);
+        }
+      } else {
+        const prefix = BlockEditorPlugin.BLOCK_PREFIXES[blockType] || '';
+        newLines.push(`${prefix}${block.textContent || ''}`);
+      }
+  
+      previousType = blockType;
+    });
+  
+    // If the last block is a quote, add a blank line to terminate it
+    if (previousType === 'quote') {
+      newLines.push('');
+    }
+  
+    editor.setValue(newLines.join('\n'));
+  }
 
   // FORMAT MENU
 
