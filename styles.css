@@ -358,3 +358,22 @@
   .block-mode-hidden {
     display: none !important;
   }
+
+/* Add to styles.css under "Block Structure" section */
+.block-image {
+  max-width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+}
+
+.block[data-type="image"] {
+  padding: 6px 12px;
+  text-align: center;
+}
+
+.block.drag-over {
+  border: 2px dashed var(--text-accent);
+  background-color: rgba(var(--accent-rgb), 0.1);
+}

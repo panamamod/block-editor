@@ -12,7 +12,7 @@ interface BlockTypeOption {
   icon: string;
 }
 
-type BlockType = 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'ul' | 'quote';
+type BlockType = 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'ul' | 'quote' | 'image';
 
 /**
  * Block Editor Plugin for Obsidian
@@ -33,6 +33,7 @@ export default class BlockEditorPlugin extends Plugin {
     'h6': '###### ',
     'ul': '- ',
     'quote': '> ',
+    'image': '![Image](', // We'll append the image data URL or path here
   };
 
   private static readonly BLOCK_TYPE_OPTIONS: BlockTypeOption[] = [
@@ -367,20 +368,31 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
     this.updateContent(container, editor);
   });
 
-  // Append the "plus" buttons and gripper to the controls container
   controls.append(addBeforeButton, handle, addAfterButton);
 
   // Create content block
   const block = document.createElement('div');
   block.className = 'block';
-  block.contentEditable = 'true';
 
   // Analyze block type and content
   const { blockType, cleanText } = this.parseBlockType(line);
-  block.textContent = cleanText;
-  block.dataset.type = blockType;
 
-  // Assemble the wrapper: controls (with nested plus buttons and gripper) and block
+  if (blockType === 'image') {
+    // Handle image block
+    block.dataset.type = 'image';
+    const img = document.createElement('img');
+    img.src = cleanText; // Assuming cleanText is the image data URL or path
+    img.className = 'block-image';
+    img.draggable = true; // Make the image draggable
+    block.appendChild(img);
+    block.contentEditable = 'false'; // Disable text editing for image blocks
+  } else {
+    // Handle text block
+    block.contentEditable = 'true';
+    block.textContent = cleanText;
+    block.dataset.type = blockType;
+  }
+
   wrapper.append(controls, block);
   this.addBlockListeners(wrapper, block, editor, view, container);
   return wrapper;
@@ -447,7 +459,15 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
   private parseBlockType(line: string): { blockType: string; cleanText: string } {
     const trimmed = line.trim();
     if (!trimmed) return { blockType: 'p', cleanText: '' };
-
+  
+    // Detect image markdown syntax: ![alt](url)
+    if (trimmed.startsWith('![')) {
+      const match = trimmed.match(/!\[.*?\]\((.*?)\)/);
+      if (match) {
+        return { blockType: 'image', cleanText: match[1] }; // Extract the URL
+      }
+    }
+  
     if (/^#+/.test(trimmed)) {
       const level = trimmed.match(/^#+/)![0].length;
       return {
@@ -487,19 +507,66 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
       console.error('Block container not found');
       return;
     }
-    
-    // Add focus and blur handlers
-    this.addFocusHandlers(wrapper, block);
-    
-    // Add key event handlers
-    this.addKeyboardHandlers(wrapper, block, editor, view, container);
-    
-    // Add input handler
-    block.addEventListener('input', () => this.updateContent(container, editor));
-    
-    // Add drag and drop handlers
+  
+    // Add focus and blur handlers for text blocks
+    if (block.dataset.type !== 'image') {
+      this.addFocusHandlers(wrapper, block);
+      this.addKeyboardHandlers(wrapper, block, editor, view, container);
+      block.addEventListener('input', () => this.updateContent(container, editor));
+    }
+  
+    // Add drag-and-drop handlers for images
+    block.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      block.classList.add('drag-over');
+    });
+  
+    block.addEventListener('dragleave', () => {
+      block.classList.remove('drag-over');
+    });
+  
+    block.addEventListener('drop', (e) => {
+      e.preventDefault();
+      block.classList.remove('drag-over');
+  
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const dataUrl = event.target?.result as string;
+            block.innerHTML = ''; // Clear the block
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.className = 'block-image';
+            img.draggable = true;
+            block.appendChild(img);
+            block.dataset.type = 'image';
+            block.contentEditable = 'false'; // Disable text editing
+            this.updateContent(container, editor);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+  
+    // Add dragstart handler for images to allow dragging out
+    if (block.dataset.type === 'image') {
+      const img = block.querySelector('img');
+      if (img) {
+        img.addEventListener('dragstart', (e) => {
+          if (e.dataTransfer) {
+            e.dataTransfer.setData('text/uri-list', img.src);
+            e.dataTransfer.setData('text/plain', img.src);
+          }
+        });
+      }
+    }
+  
+    // Add drag and drop handlers for block reordering
     this.addDragDropHandlers(wrapper, container, editor);
-    
+  
     // Add handle click handler for format menu
     const handle = wrapper.querySelector('.block-handle');
     if (handle) {
@@ -563,14 +630,28 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
     container: HTMLElement
   ): void {
     e.preventDefault();
-    
+  
+    const block = wrapper.querySelector('.block') as HTMLElement;
+    const currentType = block.dataset.type as BlockType || 'p';
+  
+    // If the block is empty and has a special format, reset to paragraph
+    if (!block.textContent?.trim() && currentType !== 'p' && currentType !== 'image') {
+      block.dataset.type = 'p';
+      this.updateContent(container, editor);
+      return;
+    }
+  
     // Create new block after current one
     const newWrapper = this.createBlockElement('', 0, editor, view, container);
-    wrapper.after(newWrapper);
-    
     const newBlock = newWrapper.querySelector('.block') as HTMLElement;
+  
+    // Apply the same type as the current block if it's a list
+    if (currentType === 'ul') {
+      newBlock.dataset.type = 'ul';
+    }
+  
+    wrapper.after(newWrapper);
     if (newBlock) newBlock.focus();
-    
     this.updateContent(container, editor);
   }
 
@@ -736,22 +817,30 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
   /**
    * Update editor content from blocks
    */
-  private updateContent(container: HTMLElement, editor: Editor): void {
-    const blocks = Array.from(
-      container.querySelectorAll('.block-wrapper:not(.new-block-wrapper)')
-    ) as HTMLElement[];
+private updateContent(container: HTMLElement, editor: Editor): void {
+  const blocks = Array.from(
+    container.querySelectorAll('.block-wrapper:not(.new-block-wrapper)')
+  ) as HTMLElement[];
+  
+  const newLines = blocks.map(wrapper => {
+    const block = wrapper.querySelector('.block') as HTMLElement;
+    if (!block) return '';
     
-    const newLines = blocks.map(wrapper => {
-      const block = wrapper.querySelector('.block') as HTMLElement;
-      if (!block) return '';
-      
-      const blockType = block.dataset.type as BlockType || 'p';
-      const prefix = BlockEditorPlugin.BLOCK_PREFIXES[blockType] || '';
-      return `${prefix}${block.textContent || ''}`;
-    });
-    
-    editor.setValue(newLines.join('\n'));
-  }
+    const blockType = block.dataset.type as BlockType || 'p';
+    if (blockType === 'image') {
+      const img = block.querySelector('img');
+      if (img) {
+        return `![Image](${img.src})`;
+      }
+      return '';
+    }
+
+    const prefix = BlockEditorPlugin.BLOCK_PREFIXES[blockType] || '';
+    return `${prefix}${block.textContent || ''}`;
+  });
+  
+  editor.setValue(newLines.join('\n'));
+}
 
   // FORMAT MENU
 
@@ -765,14 +854,10 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
     view: MarkdownView, 
     container: HTMLElement
   ): void {
-    // Close existing menu if it exists
     document.querySelector('.block-menu')?.remove();
-
-    // Create menu
+  
     const menu = this.createFormatMenu(wrapper, block, editor, view, container);
     wrapper.appendChild(menu);
-    
-    // Set up click outside handler to close menu
     this.setupFormatMenuCloseHandler(menu, wrapper);
   }
 
@@ -788,32 +873,36 @@ private createBlockElement(line: string, index: number, editor: Editor, view: Ma
   ): HTMLElement {
     const menu = document.createElement('div');
     menu.className = 'block-menu';
-    
-    // Add menu header
-    const header = document.createElement('div');
-    header.className = 'block-menu-header';
-    header.textContent = 'Convert to';
-    menu.appendChild(header);
-    
-    // Add format options
-    BlockEditorPlugin.BLOCK_TYPE_OPTIONS.forEach(opt => {
-      const btn = this.createFormatMenuOption(opt, block, container, editor, menu);
-      menu.appendChild(btn);
-    });
-
-    // Add divider
-    const divider = document.createElement('div');
-    divider.className = 'block-menu-divider';
-    menu.appendChild(divider);
-    
-    // Add delete button
+  
+    const isImageBlock = block.dataset.type === 'image';
+  
+    if (!isImageBlock) {
+      // Add menu header for text blocks
+      const header = document.createElement('div');
+      header.className = 'block-menu-header';
+      header.textContent = 'Convert to';
+      menu.appendChild(header);
+  
+      // Add format options for text blocks only
+      BlockEditorPlugin.BLOCK_TYPE_OPTIONS.forEach(opt => {
+        const btn = this.createFormatMenuOption(opt, block, container, editor, menu);
+        menu.appendChild(btn);
+      });
+  
+      // Add divider
+      const divider = document.createElement('div');
+      divider.className = 'block-menu-divider';
+      menu.appendChild(divider);
+    }
+  
+    // Add delete button (available for both text and image blocks)
     const deleteBtn = this.createDeleteButton(wrapper, container, editor, menu);
     menu.appendChild(deleteBtn);
-    
-    // Add duplicate button
+  
+    // Add duplicate button (available for both text and image blocks)
     const duplicateBtn = this.createDuplicateButton(wrapper, block, editor, view, container, menu);
     menu.appendChild(duplicateBtn);
-    
+  
     return menu;
   }
 
